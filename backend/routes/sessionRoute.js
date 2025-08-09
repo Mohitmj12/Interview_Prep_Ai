@@ -8,4 +8,6 @@ router.get('/my-sessions', protect, getMySessions);
 router.get('/:id', protect, getSessionById);
 router.delete('/:id', protect, deleteSession);
 
+
+
 module.exports = router;
