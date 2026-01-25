@@ -10,33 +10,41 @@ const axiosInstance = axios.create({
   },
 });
 
+// REQUEST INTERCEPTOR
 axiosInstance.interceptors.request.use(
   (config) => {
-    const accessToken = localStorage.getItem("token");
-    if (accessToken) {
-      config.headers.Authorization = `Bearer ${accessToken}`;
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
+// RESPONSE INTERCEPTOR
 axiosInstance.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   (error) => {
-    if (error.message) {
-      if (error.response.status === 401) {
-        window.location.href = "/";
-      } else if (error.response.status === 500) {
-        console.log("Server error, Please try again later.");
-      } else if (error.code == "ECONNABORTED") {
-        console.log("Request timeout. Please try again.");
-      }
+    // 🔴 BACKEND DOWN / NETWORK ERROR
+    if (!error.response) {
+      console.error("Backend not reachable");
+      return Promise.reject({
+        message: "Backend not reachable",
+      });
     }
+
+    const status = error.response.status;
+
+    if (status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/";
+    } else if (status === 500) {
+      console.error("Server error. Please try again later.");
+    } else if (error.code === "ECONNABORTED") {
+      console.error("Request timeout.");
+    }
+
     return Promise.reject(error);
   }
 );
