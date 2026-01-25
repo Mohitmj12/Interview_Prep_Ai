@@ -1,111 +1,126 @@
-import React, { useEffect, useState } from 'react'
-import { LuPlus } from 'react-icons/lu';
-// import {CARD_BG} from '../../utils/data'
-import DashboardLayout from '../../components/layout/DashboardLayout';
-import { useNavigate } from 'react-router-dom';
-import axiosInstance from '../../utils/axiosInstance';
-import { API_PATHS } from '../../utils/apiPaths';
-import { CARD_BG } from '../../utils/data';
-import moment from 'moment';
-import SummaryCard from '../../components/Cards/SummaryCard';
-import Modal from '../../components/Modal'
-import CreateSessionForm from './CreateSessionForm';
-import DeleteAlertContent from '../../components/DeleteAlertContent';
-import toast from 'react-hot-toast';
+import React, { useEffect, useState } from "react";
+import { LuPlus } from "react-icons/lu";
+import { useNavigate } from "react-router-dom";
+import moment from "moment";
+import toast from "react-hot-toast";
+
+import DashboardLayout from "../../components/layout/DashboardLayout";
+import SummaryCard from "../../components/Cards/SummaryCard";
+import Modal from "../../components/Modal";
+import DeleteAlertContent from "../../components/DeleteAlertContent";
+
+import axiosInstance from "../../utils/axiosInstance";
+import { API_PATHS } from "../../utils/apiPaths";
+import { CARD_BG } from "../../utils/data";
+
+import CreateSessionForm from "./CreateSessionForm";
 
 function Dashboard() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
 
-  const [openCreateModal, setOpenCreateModal] = useState(false)
-  const [session,setSession] = useState([])
-  const [openDeleteAlert,setOpenDeleteAlert] = useState({
+  const [openCreateModal, setOpenCreateModal] = useState(false);
+  const [sessions, setSessions] = useState([]);
+  const [openDeleteAlert, setOpenDeleteAlert] = useState({
     open: false,
-    data: null
-  })
-  const fetchAllSessions = async() => {
-    try{
-      const response = await axiosInstance.get(API_PATHS.SESSION.GET_ALL);
-      setSession(response.data.sessions)
-    }catch(err){
-      console.error("Error fetching session data: ",err);
-      
+    data: null,
+  });
+
+  // ✅ Fetch all sessions
+  const fetchAllSessions = async () => {
+    try {
+      const response = await axiosInstance.get(
+        API_PATHS.SESSION.GET_ALL
+      );
+      setSessions(response.data?.sessions || []);
+    } catch (error) {
+      console.error("Error fetching sessions:", error);
     }
-  }
-  const deleteSession = async(sessionData) => {
-    try{
-      await axiosInstance.delete(API_PATHS.SESSION.DELETE(sessionData?._id))
-  
-      toast.success("Session Deleted Successfully")
-      setOpenDeleteAlert({
-        open: false,
-        data:null
-      })
-      fetchAllSessions()
-    }catch(e){
-      console.error("Error deleting session data:", e)
+  };
+
+  // ✅ Delete session
+  const deleteSession = async (sessionData) => {
+    try {
+      await axiosInstance.delete(
+        API_PATHS.SESSION.DELETE(sessionData?._id)
+      );
+
+      toast.success("Session deleted successfully");
+      setOpenDeleteAlert({ open: false, data: null });
+      fetchAllSessions();
+    } catch (error) {
+      console.error("Error deleting session:", error);
+      toast.error("Failed to delete session");
     }
-  }
+  };
 
   useEffect(() => {
-     fetchAllSessions();
-  },[])
-  
+    fetchAllSessions();
+  }, []);
+
   return (
     <DashboardLayout>
-      <div className='container mx-auto pt-4 pb-4'>
-        <div className='grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-7 pt-1 pb-6 px-4 md:px-22'>
-
-          {session?.map((data,index) => (
+      <div className="container mx-auto pt-4 pb-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-7 pt-1 pb-6 px-4 md:px-22">
+          {sessions.map((data, index) => (
             <SummaryCard
-            key={data?._id}
-            colors={CARD_BG[index % CARD_BG.length]}
-            role={data?.role || ""}
-            topicToFocus = {data?.topicsToFocus || ""} 
-            experience = {data?.experience || "-"} 
-            questions = {data?.questions?.length || "-"} 
-            description = {data?.description || ""} 
-            lastUpdate={
-              data?.updatedAt ? moment(data.updateAt).format("DD MMM YYYY") : ""
-            }
-            onSelect={() => navigate(`/interview-prep/${data?._id}`)}
-            onDelete={() => setOpenDeleteAlert({open:true,data})}
+              key={data?._id}
+              colors={CARD_BG[index % CARD_BG.length]}
+              role={data?.role || ""}
+              topicToFocus={data?.topicsToFocus || ""}
+              experience={data?.experience || "-"}
+              questions={data?.questions?.length || "-"}
+              description={data?.description || ""}
+              lastUpdate={
+                data?.updatedAt
+                  ? moment(data.updatedAt).format("DD MMM YYYY")
+                  : ""
+              }
+              onSelect={() =>
+                navigate(`/interview-prep/${data?._id}`)
+              }
+              onDelete={() =>
+                setOpenDeleteAlert({ open: true, data })
+              }
             />
           ))}
         </div>
-        <button className='h-12 md:h-12 flex items-center justify-center gap-3 bg-linear-to-r from-[#FF9324] to-[#e99a4b] text-sm font-semibold text-white px-7 py-2.5 rounded-full hover:bg-black hover:text-white transition-colors cursor-pointer hover:shadow-2xl hover:shadow-orange-300 fixed bottom-10 md:bottom-20 right-10 md:right-20' onClick={() => setOpenCreateModal(true)}>
-          <LuPlus className='text-2xl text-white'/>
+
+        {/* ✅ Add New Button */}
+        <button
+          className="h-12 flex items-center justify-center gap-3 bg-linear-to-r from-[#FF9324] to-[#e99a4b] text-sm font-semibold text-white px-7 py-2.5 rounded-full hover:bg-black hover:text-white transition-colors cursor-pointer hover:shadow-2xl hover:shadow-orange-300 fixed bottom-10 md:bottom-20 right-10 md:right-20"
+          onClick={() => setOpenCreateModal(true)}
+        >
+          <LuPlus className="text-2xl text-white" />
           Add New
         </button>
       </div>
 
+      {/* ✅ Create Session Modal */}
       <Modal
-      isOpen={openCreateModal}
-      onClose={() => {
-        setOpenCreateModal(false)
-      }}
-      hideHeader
+        isOpen={openCreateModal}
+        onClose={() => setOpenCreateModal(false)}
+        hideHeader
       >
-        <div>
-          <CreateSessionForm/>
-
-        </div>
+        <CreateSessionForm />
       </Modal>
+
+      {/* ✅ Delete Confirmation Modal */}
       <Modal
-      isOpen={openDeleteAlert?.open}
-      isClose={() => {
-        setOpenDeleteAlert({open:false, data:null})
-      }}
-      title="Delete Alert"
+        isOpen={openDeleteAlert.open}
+        isClose={() =>
+          setOpenDeleteAlert({ open: false, data: null })
+        }
+        title="Delete Alert"
       >
-        <div className='w-[30vw]'>
+        <div className="w-[30vw]">
           <DeleteAlertContent
-          content="Are you sure you want to delete this session details?"
-          onDelete={() => deleteSession(openDeleteAlert.data)}
+            content="Are you sure you want to delete this session?"
+            onDelete={() => deleteSession(openDeleteAlert.data)}
           />
         </div>
       </Modal>
     </DashboardLayout>
-  )
+  );
 }
 
-export default Dashboard
+export default Dashboard;

@@ -1,9 +1,9 @@
 import { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LuSparkles } from "react-icons/lu";
-import HERO_IMG from "../assets/Hero.png";
+import HERO_IMG from "../assets/HERO.png";
 import { APP_FEATURES } from "../utils/data";
-import Modal from "../Components/Modal";
+import Modal from "../components/Modal";
 import Login from "../Pages/Auth/Login";
 import SignUp from "../Pages/Auth/SignUp";
 import { UserContext } from "../Context/userContext";

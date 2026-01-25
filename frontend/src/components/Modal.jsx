@@ -1,23 +1,33 @@
-import { div } from 'framer-motion/client'
-import React from 'react'
+import React from "react";
 
-function Modal({children, isOpen, onClose,title, hideHeader}) {
+function Modal({ children, isOpen, onClose, title, hideHeader }) {
   if (!isOpen) return null;
+
   return (
-    <div className='fixed top-0 left-0 z-50 h-screen w-screen bg-black/40 flex justify-center items-center'>
-       <div className='bg-white relative p-5 rounded-lg'>
-         {!hideHeader && (
-            <div>
-                <h2 className=''>{title}</h2>
-            </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white relative p-5 rounded-lg min-w-[350px] max-w-[90vw] max-h-[90vh]">
+        
+        {!hideHeader && (
+          <div className="mb-3">
+            <h2 className="text-lg font-semibold">{title}</h2>
+          </div>
         )}
-        <button className='text-gray-400 hover:bg-orange-50 hover:text-black text-3xl absolute right-2 top-2 flex justify-center items-center rounded-lg' onClick={onClose}><ion-icon name="close-outline"></ion-icon></button>
-        <div className='overflow-y-auto custom-scrollbar'>
-            {children}
+
+        {/* Close button */}
+        <button
+          className="text-gray-400 hover:bg-orange-50 hover:text-black text-3xl absolute right-2 top-2 flex justify-center items-center rounded-lg"
+          onClick={onClose}
+        >
+          ✕
+        </button>
+
+        {/* Modal Content */}
+        <div className="overflow-y-auto custom-scrollbar">
+          {children}
         </div>
-       </div>
+      </div>
     </div>
-  )
+  );
 }
 
-export default Modal
+export default Modal;
